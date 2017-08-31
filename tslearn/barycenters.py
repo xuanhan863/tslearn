@@ -252,7 +252,9 @@ class SoftDTWBarycenter(EuclideanBarycenter):
         self._X_fit = to_time_series_dataset(X, equal_size=False)
         self.weights = _set_weights(self.weights, self._X_fit)
         if self.barycenter_ is None:
-            self.barycenter_ = EuclideanBarycenter.fit(self, self._X_fit)
+            sz = self._X_fit[0].shape[0]
+            X_ = TimeSeriesResampler(sz=sz).fit_transform(self._X_fit)
+            self.barycenter_ = EuclideanBarycenter.fit(self, X_)
 
         if self.max_iter > 0:
             # The function works with vectors so we need to vectorize barycenter_.
