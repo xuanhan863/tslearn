@@ -8,8 +8,9 @@ import numpy
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
-from tslearn.utils import to_time_series_dataset
+from tslearn.utils import to_time_series_dataset, check_equal_size
 from tslearn.metrics import dtw_path, SquaredEuclidean, SoftDTW
+from tslearn.preprocessing import TimeSeriesResampler
 
 
 __author__ = 'Romain Tavenard romain.tavenard[at]univ-rennes2.fr'
@@ -155,13 +156,11 @@ class DTWBarycenterAveraging(EuclideanBarycenter):
         return barycenter
 
     def _init_avg(self, X):
-        if X.shape[1] == self.barycenter_size:
+        if X[0].shape[0] == self.barycenter_size and check_equal_size(X):
             return X.mean(axis=0)
         else:
-            X_avg = X.mean(axis=0)
-            xnew = numpy.linspace(0, 1, self.barycenter_size)
-            f = interp1d(numpy.linspace(0, 1, X_avg.shape[0]), X_avg, kind="linear", axis=0)
-            return f(xnew)
+            X_ = TimeSeriesResampler(sz=self.barycenter_size).fit_transform(X)
+            return X_.mean(axis=0)
 
     def _petitjean_assignment(self, X, barycenter):
         n = X.shape[0]
