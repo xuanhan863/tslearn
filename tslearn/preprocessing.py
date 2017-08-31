@@ -44,13 +44,14 @@ class TimeSeriesResampler(TransformerMixin):
         numpy.ndarray
             Resampled time series dataset
         """
-        X_ = to_time_series_dataset(X)
-        n_ts, sz, d = X_.shape
-        X_out = numpy.empty((n_ts, self.sz_, d))
-        for i in range(X_.shape[0]):
+        X_ = to_time_series_dataset(X, equal_size=False)
+        n_ts = X_.shape[0]
+        X_out = numpy.empty((n_ts, ), dtype=object)
+        for i, ts in enumerate(X_):
             xnew = numpy.linspace(0, 1, self.sz_)
+            sz, d = ts.shape
             for di in range(d):
-                f = interp1d(numpy.linspace(0, 1, sz), X_[i, :, di], kind="slinear")
+                f = interp1d(numpy.linspace(0, 1, sz), ts[:, di], kind="slinear")
                 X_out[i, :, di] = f(xnew)
         return X_out
 
@@ -89,13 +90,14 @@ class TimeSeriesScalerMinMax(TransformerMixin):
         numpy.ndarray
             Rescaled time series dataset
         """
-        X_ = to_time_series_dataset(X)
-        for i in range(X_.shape[0]):
-            for d in range(X_.shape[2]):
-                cur_min = X_[i, :, d].min()
-                cur_max = X_[i, :, d].max()
+        X_ = to_time_series_dataset(X, equal_size=False)
+        for ts in X_:
+            for d in range(ts.shape[1]):
+                cur_min = ts[:, d].min()
+                cur_max = ts[:, d].max()
                 cur_range = cur_max - cur_min
-                X_[i, :, d] = (X_[i, :, d] - cur_min) * (self.max_ - self.min_) / cur_range + self.min_
+                ts[:, d] -= cur_min
+                ts[:, d] *= (self.max_ - self.min_) / cur_range + self.min_
         return X_
 
 
@@ -134,10 +136,11 @@ class TimeSeriesScalerMeanVariance(TransformerMixin):
         numpy.ndarray
             Rescaled time series dataset
         """
-        X_ = to_time_series_dataset(X)
-        for i in range(X_.shape[0]):
-            for d in range(X_.shape[2]):
-                cur_mean = X_[i, :, d].mean()
-                cur_std = X_[i, :, d].std()
-                X_[i, :, d] = (X_[i, :, d] - cur_mean) * self.std_ / cur_std + self.mu_
+        X_ = to_time_series_dataset(X, equal_size=False)
+        for ts in X_:
+            for d in range(ts.shape[1]):
+                cur_mean = ts[:, d].mean()
+                cur_std = ts[:, d].std()
+                ts[:, d] -= cur_mean
+                ts[:, d] *= self.std_ / cur_std + self.mu_
         return X_

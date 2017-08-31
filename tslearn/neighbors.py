@@ -129,7 +129,7 @@ class KNeighborsTimeSeries(KNeighborsTimeSeriesMixin, NearestNeighbors):
         ind : array
             Indices of the nearest points in the population matrix.
         """
-        X_ = to_time_series_dataset(X)
+        X_ = to_time_series_dataset(X, equal_size=False)
         return KNeighborsTimeSeriesMixin.kneighbors(self,
                                                     X=X_,
                                                     n_neighbors=n_neighbors,
@@ -178,7 +178,7 @@ class KNeighborsTimeSeriesClassifier(KNeighborsClassifier, KNeighborsTimeSeriesM
         y : array-like, shape (n_ts, )
             Target values.
         """
-        self._fit_X = to_time_series_dataset(X)
+        self._fit_X = to_time_series_dataset(X, equal_size=False)
         self._fit_y = numpy.array(y)
 
     def predict(self, X):
@@ -189,7 +189,7 @@ class KNeighborsTimeSeriesClassifier(KNeighborsClassifier, KNeighborsTimeSeriesM
         X : array-like, shape (n_ts, sz, d)
             Test samples.
         """
-        X_ = to_time_series_dataset(X)
+        X_ = to_time_series_dataset(X, equal_size=False)
         neigh_dist, neigh_ind = self.kneighbors(X_)
 
         weights = _get_weights(neigh_dist, self.weights)

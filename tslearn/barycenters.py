@@ -40,6 +40,10 @@ class EuclideanBarycenter:
            [ 2. ],
            [ 3.5],
            [ 4.5]])
+
+    Note
+    ----
+    This algorithm requires equal sized time series.
     """
     def __init__(self, weights=None):
         self.weights = weights
@@ -127,9 +131,9 @@ class DTWBarycenterAveraging(EuclideanBarycenter):
         numpy.array of shape (barycenter_size, d) or (sz, d) if barycenter_size is None
             DBA barycenter of the provided time series dataset.
         """
-        X_ = to_time_series_dataset(X)
+        X_ = to_time_series_dataset(X, equal_size=False)
         if self.barycenter_size is None:
-            self.barycenter_size = X_.shape[1]
+            self.barycenter_size = X_[0].shape[0]
         self.weights = _set_weights(self.weights, X_)
         if self.init_barycenter is None:
             barycenter = self._init_avg(X_)
@@ -246,7 +250,7 @@ class SoftDTWBarycenter(EuclideanBarycenter):
         return obj, G.ravel()
 
     def fit(self, X):
-        self._X_fit = to_time_series_dataset(X)
+        self._X_fit = to_time_series_dataset(X, equal_size=False)
         self.weights = _set_weights(self.weights, self._X_fit)
         if self.barycenter_ is None:
             self.barycenter_ = EuclideanBarycenter.fit(self, self._X_fit)

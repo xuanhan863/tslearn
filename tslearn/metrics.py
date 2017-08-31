@@ -340,15 +340,17 @@ def sigma_gak(dataset, n_samples=100, random_state=None):
     .. [1] M. Cuturi, "Fast global alignment kernels," ICML 2011.
     """
     random_state = check_random_state(random_state)
-    dataset = to_time_series_dataset(dataset)
-    n_ts, sz, d = dataset.shape
-    if n_ts * sz < n_samples:
-        replace = True
-    else:
-        replace = False
-    sample_indices = random_state.choice(n_ts * sz, size=n_samples, replace=replace)
-    dists = pdist(dataset.reshape((-1, d))[sample_indices], metric="euclidean")
-    return numpy.median(dists) * numpy.sqrt(sz)
+    dataset = to_time_series_dataset(dataset, equal_size=False)
+    n_samples_in_dataset = sum([ts.shape[0] for ts in dataset])
+    d = dataset[0].shape[1]
+    avg_sz = float(n_samples_in_dataset) / dataset.shape[0]
+    replace = (n_samples_in_dataset < n_samples)
+    sample_indices = random_state.choice(n_samples_in_dataset, size=n_samples, replace=replace)
+    reshaped_dataset = numpy.empty((0, d))
+    for ts in dataset:
+        reshaped_dataset = numpy.vstack((reshaped_dataset, ts))
+    dists = pdist(reshaped_dataset[sample_indices], metric="euclidean")
+    return numpy.median(dists) * numpy.sqrt(avg_sz)
 
 
 def gamma_soft_dtw(dataset, n_samples=100, random_state=None):
@@ -430,6 +432,10 @@ def lb_keogh(ts_query, ts_candidate=None, radius=1, envelope_candidate=None):
     ----------
     .. [1] Keogh, E. Exact indexing of dynamic time warping. In International Conference on Very Large Data Bases, 2002.
        pp 406-417.
+
+    Note
+    ----
+    This algorithm requires equal sized time series.
     """
     if ts_candidate is None:
         envelope_down, envelope_up = envelope_candidate

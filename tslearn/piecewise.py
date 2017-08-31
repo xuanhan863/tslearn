@@ -106,6 +106,10 @@ class PiecewiseAggregateApproximation(TransformerMixin):
     ----------
     .. [1] E. Keogh & M. Pazzani. Scaling up dynamic time warping for datamining applications. SIGKDD 2000,
        pp. 285--289.
+
+    Note
+    ----
+    This algorithm requires equal sized time series.
     """
     def __init__(self, n_segments):
         self.n_segments = n_segments
@@ -299,6 +303,10 @@ class SymbolicAggregateApproximation(PiecewiseAggregateApproximation):
     ----------
     .. [1] J. Lin, E. Keogh, L. Wei, et al. Experiencing SAX: a novel symbolic representation of time series.
        Data Mining and Knowledge Discovery, 2007. vol. 15(107)
+
+    Note
+    ----
+    This algorithm requires equal sized time series.
     """
     def __init__(self, n_segments, alphabet_size_avg):
         PiecewiseAggregateApproximation.__init__(self, n_segments)
@@ -493,6 +501,10 @@ class OneD_SymbolicAggregateApproximation(SymbolicAggregateApproximation):
     ----------
     .. [1] S. Malinowski, T. Guyet, R. Quiniou, R. Tavenard. 1d-SAX: a Novel Symbolic Representation for Time Series.
        IDA 2013.
+
+    Note
+    ----
+    This algorithm requires equal sized time series.
     """
     def __init__(self, n_segments, alphabet_size_avg, alphabet_size_slope, sigma_l=None):
         SymbolicAggregateApproximation.__init__(self, n_segments, alphabet_size_avg=alphabet_size_avg)

@@ -167,6 +167,10 @@ class ShapeletModel:
     References
     ----------
     .. [1] J. Grabocka et al. Learning Time-Series Shapelets. SIGKDD 2014.
+
+    Note
+    ----
+    This algorithm requires equal sized time series.
     """
     def __init__(self, n_shapelets_per_size,
                  max_iter=1000,
