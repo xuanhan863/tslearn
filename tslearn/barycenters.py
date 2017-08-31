@@ -182,7 +182,7 @@ class DTWBarycenterAveraging(EuclideanBarycenter):
         cost = 0.
         for t_barycenter in range(self.barycenter_size):
             for i_ts, t_ts in zip(assign[0][t_barycenter], assign[1][t_barycenter]):
-                cost += numpy.linalg.norm(X[i_ts, t_ts] - barycenter[t_barycenter]) ** 2
+                cost += numpy.linalg.norm(X[i_ts][t_ts] - barycenter[t_barycenter]) ** 2
         return cost / X.shape[0]
 
 
