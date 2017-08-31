@@ -50,9 +50,10 @@ class TimeSeriesResampler(TransformerMixin):
         for i, ts in enumerate(X_):
             xnew = numpy.linspace(0, 1, self.sz_)
             sz, d = ts.shape
+            X_out[i] = numpy.empty((self.sz_, d))
             for di in range(d):
                 f = interp1d(numpy.linspace(0, 1, sz), ts[:, di], kind="slinear")
-                X_out[i, :, di] = f(xnew)
+                X_out[i][:, di] = f(xnew)
         return X_out
 
 
