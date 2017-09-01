@@ -11,8 +11,8 @@ import numpy
 
 from tslearn.metrics import cdist_gak, cdist_dtw, cdist_soft_dtw, dtw
 from tslearn.barycenters import EuclideanBarycenter, DTWBarycenterAveraging, SoftDTWBarycenter
-from tslearn.preprocessing import TimeSeriesScalerMeanVariance
-from tslearn.utils import to_time_series_dataset, time_series_dataset_shape
+from tslearn.preprocessing import TimeSeriesScalerMeanVariance, TimeSeriesResampler
+from tslearn.utils import to_time_series_dataset, time_series_dataset_shape, check_equal_size, to_equal_sized_dataset
 from tslearn.cycc import cdist_normalized_cc, y_shifted_sbd_vec
 
 
@@ -375,8 +375,14 @@ class TimeSeriesKMeans(BaseEstimator, ClusterMixin, TimeSeriesCentroidBasedClust
 
     def _fit_one_init(self, X, x_squared_norms, rs):
         n_ts, sz, d = time_series_dataset_shape(X)
-        self.cluster_centers_ = _k_init(X.reshape((n_ts, -1)),
-                                        self.n_clusters, x_squared_norms, rs).reshape((-1, sz, d))
+        if check_equal_size(X):
+            X_ = to_equal_sized_dataset(X)
+        else:
+            X_ = TimeSeriesResampler(sz=sz).fit_transform(X)
+        self.cluster_centers_ = _k_init(X_.reshape((n_ts, -1)),
+                                        self.n_clusters,
+                                        x_squared_norms,
+                                        rs).reshape((-1, sz, d))
         old_inertia = numpy.inf
 
         for it in range(self.max_iter):
@@ -433,7 +439,7 @@ class TimeSeriesKMeans(BaseEstimator, ClusterMixin, TimeSeriesCentroidBasedClust
         """
         n_successful = 0
 
-        X_ = to_time_series_dataset(X)
+        X_ = to_time_series_dataset(X, equal_size=False)
         rs = check_random_state(self.random_state)
         x_squared_norms = cdist(X_.reshape((X_.shape[0], -1)), numpy.zeros((1, X_.shape[1] * X_.shape[2])),
                                 metric="sqeuclidean").reshape((1, -1))
@@ -489,7 +495,7 @@ class TimeSeriesKMeans(BaseEstimator, ClusterMixin, TimeSeriesCentroidBasedClust
         labels : array of shape=(n_ts, )
             Index of the cluster each sample belongs to.
         """
-        X_ = to_time_series_dataset(X)
+        X_ = to_time_series_dataset(X, equal_size=False)
         return self._assign(X_, update_class_attributes=False)
 
 
