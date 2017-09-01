@@ -201,13 +201,13 @@ def cdist_dtw(dataset1, dataset2=None, global_constraint=None, sakoe_chiba_radiu
     .. [1] H. Sakoe, S. Chiba, "Dynamic programming algorithm optimization for spoken word recognition,"
        IEEE Transactions on Acoustics, Speech and Signal Processing, vol. 26(1), pp. 43--49, 1978.
     """
-    dataset1 = to_time_series_dataset(dataset1)
+    dataset1 = to_time_series_dataset(dataset1, equal_size=False)
     self_similarity = False
     if dataset2 is None:
         dataset2 = dataset1
         self_similarity = True
     else:
-        dataset2 = to_time_series_dataset(dataset2)
+        dataset2 = to_time_series_dataset(dataset2, equal_size=False)
     sz1 = dataset1.shape[1]
     sz2 = dataset2.shape[1]
     if global_constraint == "sakoe_chiba":
@@ -294,13 +294,13 @@ def cdist_gak(dataset1, dataset2=None, sigma=1.):
     ----------
     .. [1] M. Cuturi, "Fast global alignment kernels," ICML 2011.
     """
-    dataset1 = to_time_series_dataset(dataset1)
+    dataset1 = to_time_series_dataset(dataset1, equal_size=False)
     self_similarity = False
     if dataset2 is None:
         dataset2 = dataset1
         self_similarity = True
     else:
-        dataset2 = to_time_series_dataset(dataset2)
+        dataset2 = to_time_series_dataset(dataset2, equal_size=False)
     return cycdist_gak(dataset1, dataset2, sigma, self_similarity=self_similarity)
 
 

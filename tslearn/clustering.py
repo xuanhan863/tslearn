@@ -12,7 +12,7 @@ import numpy
 from tslearn.metrics import cdist_gak, cdist_dtw, cdist_soft_dtw, dtw
 from tslearn.barycenters import EuclideanBarycenter, DTWBarycenterAveraging, SoftDTWBarycenter
 from tslearn.preprocessing import TimeSeriesScalerMeanVariance
-from tslearn.utils import to_time_series_dataset
+from tslearn.utils import to_time_series_dataset, time_series_dataset_shape
 from tslearn.cycc import cdist_normalized_cc, y_shifted_sbd_vec
 
 
@@ -173,9 +173,9 @@ class GlobalAlignmentKernelKMeans(BaseEstimator, ClusterMixin):
         sample_weight : array-like of shape=(n_ts, ) or None (default: None)
             Weights to be given to time series in the learning process. By default, all time series weights are equal.
         """
-
+        X_ = to_time_series_dataset(X, equal_size=False)
         n_samples = X.shape[0]
-        K = self._get_kernel(X)
+        K = self._get_kernel(X_)
         sw = sample_weight if sample_weight else numpy.ones(n_samples)
         self.sample_weight_ = sw
         rs = check_random_state(self.random_state)
@@ -198,7 +198,7 @@ class GlobalAlignmentKernelKMeans(BaseEstimator, ClusterMixin):
                 if self.verbose:
                     print("Resumed because of empty cluster")
         if n_successful > 0:
-            self.X_fit_ = X
+            self.X_fit_ = X_
             self.labels_ = last_correct_labels
             self.inertia_ = min_inertia
         else:
@@ -374,7 +374,7 @@ class TimeSeriesKMeans(BaseEstimator, ClusterMixin, TimeSeriesCentroidBasedClust
             self.gamma_sdtw = metric_params.get("gamma_sdtw", 1.)
 
     def _fit_one_init(self, X, x_squared_norms, rs):
-        n_ts, sz, d = X.shape
+        n_ts, sz, d = time_series_dataset_shape(X)
         self.cluster_centers_ = _k_init(X.reshape((n_ts, -1)),
                                         self.n_clusters, x_squared_norms, rs).reshape((-1, sz, d))
         old_inertia = numpy.inf
@@ -547,6 +547,10 @@ class KShape(BaseEstimator, ClusterMixin, TimeSeriesCentroidBasedClusteringMixin
     ----------
     .. [1] J. Paparrizos & L. Gravano. k-Shape: Efficient and Accurate Clustering of Time Series. SIGMOD 2015.
        pp. 1855-1870.
+
+    Note
+    ----
+    This algorithm requires equal sized time series.
     """
     def __init__(self, n_clusters=3, max_iter=100, tol=1e-6, n_init=1, verbose=True, random_state=None):
         self.n_clusters = n_clusters

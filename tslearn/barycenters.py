@@ -175,7 +175,7 @@ class DTWBarycenterAveraging(EuclideanBarycenter):
     def _petitjean_update_barycenter(self, X, assign):
         barycenter = numpy.zeros((self.barycenter_size, X.shape[-1]))
         for t in range(self.barycenter_size):
-            barycenter[t] = numpy.average(X[assign[0][t], assign[1][t]], axis=0, weights=self.weights[assign[0][t]])
+            barycenter[t] = numpy.average(X[assign[0][t]][assign[1][t]], axis=0, weights=self.weights[assign[0][t]])
         return barycenter
 
     def _petitjean_cost(self, X, barycenter, assign):

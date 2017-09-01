@@ -297,3 +297,8 @@ def check_equal_size(dataset):
             if sz != ts.shape[0]:
                 return False
     return True
+
+
+def time_series_dataset_shape(dataset):
+    X = to_time_series_dataset(dataset, equal_size=False)
+    return X.shape[0], X[0].shape[0], X[0].shape[1]
